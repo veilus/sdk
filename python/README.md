@@ -18,6 +18,7 @@ export VEILUS_API_TOKEN=...
 import asyncio
 from veilus import Veilus
 
+
 async def main():
     veilus = Veilus()
     profiles = await veilus.list_profiles()
@@ -28,6 +29,7 @@ async def main():
     await session.close()  # disconnects Playwright; the profile keeps running
 
     await veilus.stop(profiles[0]["id"])
+
 
 asyncio.run(main())
 ```
