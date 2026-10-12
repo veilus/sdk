@@ -1,0 +1,24 @@
+{
+  "name": "veilus",
+  "version": "0.1.0",
+  "description": "Launch Veilus browser profiles from Node and drive them with Playwright.",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "files": ["src", "README.md", "LICENSE-MIT", "LICENSE-APACHE"],
+  "engines": { "node": ">=18" },
+  "scripts": { "test": "node --test" },
+  "peerDependencies": { "playwright-core": ">=1.40" },
+  "peerDependenciesMeta": { "playwright-core": { "optional": true } },
+  "license": "MIT OR Apache-2.0",
+  "author": "Veilus <veilusbrowser@gmail.com>",
+  "homepage": "https://github.com/veilus/sdk",
+  "repository": { "type": "git", "url": "git+https://github.com/veilus/sdk.git", "directory": "js" },
+  "keywords": ["veilus", "browser", "automation", "playwright", "cdp", "profiles"]
+}

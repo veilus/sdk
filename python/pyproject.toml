@@ -1,0 +1,25 @@
+[project]
+name = "veilus"
+version = "0.1.0"
+description = "Launch Veilus browser profiles from Python and drive them with Playwright."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+authors = [{ name = "Veilus", email = "veilusbrowser@gmail.com" }]
+keywords = ["veilus", "browser", "automation", "playwright", "cdp", "profiles"]
+dependencies = []
+
+[project.optional-dependencies]
+playwright = ["playwright>=1.40"]
+
+[project.urls]
+Homepage = "https://github.com/veilus/sdk"
+Documentation = "https://docs.veilus.io/recipes/agent-frameworks/"
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["pytest>=8"]
