@@ -1,0 +1,31 @@
+# Examples
+
+Each file connects one tool to a running Veilus profile over its CDP address and
+prints `VEILUS_EXAMPLE_OK <page title>`. They disconnect when done — the profile
+keeps running.
+
+Requirements: Veilus 0.2.9 or newer, the local API turned on (**API & MCP** page),
+and a token:
+
+```bash
+export VEILUS_API_TOKEN=...
+export VEILUS_PROFILE_ID=...   # optional; defaults to your first profile
+```
+
+Run one example:
+
+```bash
+uv run --project examples/python --group crawl4ai python examples/python/crawl4ai_example.py
+cd examples/js && npm ci && node playwright.mjs
+```
+
+Run all and see which pass:
+
+```bash
+python examples/check.py            # table on stdout
+python examples/check.py --write-tested   # also updates TESTED.md
+```
+
+The two examples that drive an LLM (browser-use, Stagehand) need
+`ANTHROPIC_API_KEY`; set `VEILUS_EXAMPLE_MODEL` to use another Claude model.
+Without the key they are reported as `SKIP`, not run.
