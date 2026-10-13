@@ -60,7 +60,7 @@ EXAMPLES = [
     Example(
         "agent-browser",
         ["bash", str(HERE / "shell" / "agent-browser.sh")],
-        needs_cmd=("agent-browser",),
+        needs_cmd=("node",),
     ),
     _py("crawl4ai", "crawl4ai_example.py"),
     _py("langchain", "langchain_example.py"),
