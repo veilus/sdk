@@ -12,6 +12,7 @@ import datetime as dt
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import urllib.request
@@ -21,6 +22,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PY = ["uv", "run", "--project", str(HERE / "python"), "--group"]
 TIMEOUT_S = 300
+
+
+class PreflightError(Exception):
+    """The environment cannot run the examples (exit code 2, not a FAIL)."""
 
 
 @dataclass(frozen=True)
@@ -67,7 +72,9 @@ EXAMPLES = [
 ]
 
 
-def run_example(ex: Example, env: dict[str, str], profile_running) -> Result:
+def run_example(
+    ex: Example, env: dict[str, str], profile_running, timeout: int = TIMEOUT_S
+) -> Result:
     full_env = {**os.environ, **env}
     for var in ex.needs_env:
         if not full_env.get(var):
@@ -75,28 +82,31 @@ def run_example(ex: Example, env: dict[str, str], profile_running) -> Result:
     for cmd in ex.needs_cmd:
         if shutil.which(cmd) is None:
             return Result(ex.name, "SKIP", f"{cmd} not installed")
+    proc = subprocess.Popen(
+        ex.cmd,
+        env=full_env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
+    )
     try:
-        p = subprocess.run(
-            ex.cmd,
-            env=full_env,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=TIMEOUT_S,
-        )
+        stdout, stderr = proc.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
-        return Result(ex.name, "FAIL", f"timeout after {TIMEOUT_S}s")
+        os.killpg(proc.pid, signal.SIGKILL)
+        proc.communicate()
+        return Result(ex.name, "FAIL", f"timeout after {timeout}s")
     version = ""
     marker = False
-    for line in p.stdout.splitlines():
+    for line in stdout.splitlines():
         if line.startswith("VEILUS_EXAMPLE_VERSION "):
             version = line.split(" ", 1)[1].strip()
         if line.startswith("VEILUS_EXAMPLE_OK "):
             marker = True
-    tail = (p.stderr or p.stdout).strip().splitlines()[-3:]
-    if p.returncode != 0:
+    tail = (stderr or stdout).strip().splitlines()[-3:]
+    if proc.returncode != 0:
         return Result(
-            ex.name, "FAIL", f"exit {p.returncode}: {' | '.join(tail)}", version
+            ex.name, "FAIL", f"exit {proc.returncode}: {' | '.join(tail)}", version
         )
     if not marker:
         return Result(ex.name, "FAIL", "no VEILUS_EXAMPLE_OK line", version)
@@ -113,7 +123,8 @@ def render_table(results: list[Result], date: str) -> str:
         "|---|---|---|---|",
     ]
     lines += [
-        f"| {r.name} | {r.version or '—'} | {r.status} | {r.reason} |" for r in results
+        f"| {r.name} | {r.version or '—'} | {r.status} | {r.reason.replace('|', chr(92) + '|')} |"
+        for r in results
     ]
     return "\n".join(lines) + "\n"
 
@@ -123,14 +134,21 @@ class Api:
         app_dir = Path(os.environ.get("VEILUS_APP_DIR", Path.home() / ".veilus"))
         endpoint = app_dir / "api-endpoint.json"
         if not endpoint.exists():
-            sys.exit(
+            raise PreflightError(
                 f"{endpoint} not found — open Veilus and turn on the local API "
                 "(API & MCP page)."
             )
-        self.base = f"http://127.0.0.1:{json.loads(endpoint.read_text())['rest_port']}"
-        self.token = os.environ.get("VEILUS_API_TOKEN") or sys.exit(
-            "VEILUS_API_TOKEN is not set — create a token on the API & MCP page."
-        )
+        try:
+            self.base = (
+                f"http://127.0.0.1:{json.loads(endpoint.read_text())['rest_port']}"
+            )
+        except (ValueError, KeyError, TypeError) as e:
+            raise PreflightError(f"{endpoint} is malformed: {e!r}") from e
+        self.token = os.environ.get("VEILUS_API_TOKEN")
+        if not self.token:
+            raise PreflightError(
+                "VEILUS_API_TOKEN is not set — create a token on the API & MCP page."
+            )
 
     def _call(self, method: str, path: str):
         req = urllib.request.Request(
@@ -147,6 +165,8 @@ class Api:
         return data.get("profiles", data) if isinstance(data, dict) else data
 
     def ensure_running(self, profile_id: str) -> None:
+        if not any(p["id"] == profile_id for p in self.profiles()):
+            raise PreflightError(f"profile {profile_id} not found in Veilus.")
         if not self.is_running(profile_id):
             self._call("POST", f"/v1/profiles/{profile_id}/launch")
 
@@ -154,23 +174,36 @@ class Api:
         return any(p["id"] == profile_id and p.get("cdpUrl") for p in self.profiles())
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", action="append", default=[])
     ap.add_argument("--write-tested", action="store_true")
     ap.add_argument("--json", type=Path)
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
+    names = [e.name for e in EXAMPLES]
+    unknown = [n for n in args.only if n not in names]
+    if unknown:
+        print(
+            f"Unknown --only name(s) {unknown}; valid: {', '.join(names)}",
+            file=sys.stderr,
+        )
+        return 2
+    if args.write_tested and args.only:
+        print("--write-tested needs a full run; drop --only.", file=sys.stderr)
+        return 2
     try:
         api = Api()
         profiles = api.profiles()
-    except OSError as e:
-        print(f"Veilus local API is not reachable: {e}", file=sys.stderr)
+        if not profiles:
+            raise PreflightError("No profile in Veilus — create one first.")
+        pid = os.environ.get("VEILUS_PROFILE_ID") or profiles[0]["id"]
+        api.ensure_running(pid)
+    except PreflightError as e:
+        print(e, file=sys.stderr)
         return 2
-    if not profiles:
-        print("No profile in Veilus — create one first.", file=sys.stderr)
+    except (OSError, ValueError, KeyError) as e:  # URLError/HTTPError are OSError
+        print(f"Veilus local API preflight failed: {e!r}", file=sys.stderr)
         return 2
-    pid = os.environ.get("VEILUS_PROFILE_ID") or profiles[0]["id"]
-    api.ensure_running(pid)
     env = {"VEILUS_PROFILE_ID": pid}
     todo = [e for e in EXAMPLES if not args.only or e.name in args.only]
     results = [run_example(e, env, api.is_running) for e in todo]

@@ -1,7 +1,8 @@
 # Examples
 
 Each file connects one tool to a running Veilus profile over its CDP address and
-prints `VEILUS_EXAMPLE_OK <page title>`. They disconnect when done — the profile
+prints `VEILUS_EXAMPLE_VERSION <package> <version>` and then
+`VEILUS_EXAMPLE_OK <page title>`. They disconnect when done — the profile
 keeps running.
 
 Requirements: Veilus 0.2.9 or newer, the local API turned on (**API & MCP** page),
@@ -10,6 +11,7 @@ and a token:
 ```bash
 export VEILUS_API_TOKEN=...
 export VEILUS_PROFILE_ID=...   # optional; defaults to your first profile
+export VEILUS_APP_DIR=...      # optional; where Veilus keeps api-endpoint.json (default ~/.veilus)
 ```
 
 Run one example:
@@ -25,6 +27,10 @@ Run all and see which pass:
 python examples/check.py            # table on stdout
 python examples/check.py --write-tested   # also updates TESTED.md
 ```
+
+`check.py` exits 0 when nothing failed (SKIP is fine), 1 when any example failed, and
+2 when it cannot start (API off, no token, no profile, unknown `--only` name).
+`--write-tested` needs a full run and cannot be combined with `--only`.
 
 The two examples that drive an LLM (browser-use, Stagehand) need
 `ANTHROPIC_API_KEY`; set `VEILUS_EXAMPLE_MODEL` to use another Claude model.
