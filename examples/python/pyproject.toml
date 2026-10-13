@@ -1,0 +1,19 @@
+[project]
+name = "veilus-examples"
+version = "0"
+requires-python = ">=3.11"
+dependencies = ["veilus"]
+
+[tool.uv.sources]
+veilus = { path = "../../python", editable = true }
+
+[dependency-groups]
+crawl4ai = ["crawl4ai"]
+langchain = ["langchain-community", "playwright", "beautifulsoup4", "lxml"]
+selenium = ["selenium"]
+scrapling = ["scrapling[fetchers]"]
+crawlee = ["crawlee[playwright]"]
+browser-use = ["browser-use"]
+
+[tool.uv]
+package = false
