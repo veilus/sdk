@@ -10,8 +10,7 @@ veilus = { path = "../../python", editable = true }
 [dependency-groups]
 crawl4ai = ["crawl4ai"]
 langchain = ["langchain-community", "playwright", "beautifulsoup4", "lxml"]
-selenium = ["selenium"]
-scrapling = ["scrapling[fetchers]"]
+scrapling = ["scrapling", "playwright"]
 crawlee = ["crawlee[playwright]"]
 browser-use = ["browser-use"]
 

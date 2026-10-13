@@ -64,7 +64,6 @@ EXAMPLES = [
     ),
     _py("crawl4ai", "crawl4ai_example.py"),
     _py("langchain", "langchain_example.py"),
-    _py("selenium", "selenium_example.py"),
     _py("scrapling", "scrapling_example.py"),
     _py("crawlee", "crawlee_example.py"),
     _py("browser-use", "browser_use_example.py", needs_env=LLM),

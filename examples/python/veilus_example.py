@@ -14,8 +14,12 @@ async def cdp_url() -> str:
     """CDP address of VEILUS_PROFILE_ID (or the first profile), launching it if needed."""
     veilus = Veilus()
     profiles = await veilus.list_profiles()
+    if not profiles:
+        sys.exit("No profile in Veilus - create one first.")
     wanted = os.environ.get("VEILUS_PROFILE_ID") or profiles[0]["id"]
-    profile = next(p for p in profiles if p["id"] == wanted)
+    profile = next((p for p in profiles if p["id"] == wanted), None)
+    if profile is None:
+        sys.exit(f"VEILUS_PROFILE_ID {wanted!r} not found in Veilus.")
     return profile.get("cdpUrl") or (await veilus.launch(wanted))["cdpUrl"]
 
 
