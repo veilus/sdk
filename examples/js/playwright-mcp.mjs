@@ -14,4 +14,6 @@ const res = await client.callTool({ name: 'browser_navigate', arguments: { url: 
 const text = res.content.map((c) => c.text ?? '').join('\n');
 await client.close();
 version('@playwright/mcp');
-ok(/Page Title: (.+)/.exec(text)?.[1] ?? '');
+const title = /Page Title: (.+)/.exec(text)?.[1];
+if (!title) console.error(`no "Page Title:" in tool output:\n${text}`);
+ok(title ?? '');

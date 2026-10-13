@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer-core';
 import { URL, cdpUrl, ok, version } from './veilus-example.mjs';
 
 const browser = await puppeteer.connect({ browserURL: await cdpUrl(), defaultViewport: null });
-const [page] = await browser.pages();
+const [page = await browser.newPage()] = await browser.pages();
 await page.goto(URL);
 const title = await page.title();
 await browser.disconnect();
