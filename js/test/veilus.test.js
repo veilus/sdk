@@ -59,6 +59,19 @@ test('launch sends diagnostic only when asked, and stop posts to the profile', a
   await api.close();
 });
 
+test('launch sends headless only when asked, alone or with diagnostic', async () => {
+  const api = await fakeApi(() => [200, { pid: 7, cdpUrl: 'http://127.0.0.1:9' }]);
+  const veilus = new Veilus({ token: 't', appDir: api.appDir });
+  await veilus.launch('p1', { headless: true });
+  await veilus.launch('p1', { headless: true, diagnostic: true });
+  await veilus.launch('p1', { headless: false });
+  assert.deepEqual(
+    api.requests.map((r) => r.body),
+    ['{"headless":true}', '{"diagnostic":true,"headless":true}', '{}'],
+  );
+  await api.close();
+});
+
 test('a launch reply without cdpUrl names the minimum app version', async () => {
   const api = await fakeApi(() => [200, { pid: 7 }]);
   const veilus = new Veilus({ token: 't', appDir: api.appDir });

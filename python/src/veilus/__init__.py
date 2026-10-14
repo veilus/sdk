@@ -125,13 +125,20 @@ class Veilus:
         """All profiles. A running one carries ``cdpUrl``."""
         return await self._request("GET", "/v1/profiles")
 
-    async def launch(self, profile_id: str, diagnostic: bool = False) -> dict[str, Any]:
+    async def launch(
+        self, profile_id: str, diagnostic: bool = False, headless: bool = False
+    ) -> dict[str, Any]:
         """Launch a profile and wait for its browser to start.
 
         ``diagnostic`` (Veilus >= 0.2.10): the profile's proxy without its
-        fingerprint, in a temporary directory.
+        fingerprint, in a temporary directory. ``headless`` (Veilus >= 0.2.13):
+        no browser window; the profile's fingerprint is unchanged.
         """
-        body = {"diagnostic": True} if diagnostic else {}
+        body: dict[str, bool] = {}
+        if diagnostic:
+            body["diagnostic"] = True
+        if headless:
+            body["headless"] = True
         out = await self._request(
             "POST", f"/v1/profiles/{quote(profile_id, safe='')}/launch", body
         )
@@ -147,10 +154,14 @@ class Veilus:
             "POST", f"/v1/profiles/{quote(profile_id, safe='')}/stop", {}
         )
 
-    async def connect(self, profile_id: str, diagnostic: bool = False) -> Connected:
+    async def connect(
+        self, profile_id: str, diagnostic: bool = False, headless: bool = False
+    ) -> Connected:
         """Playwright connected to the profile: launched if it is not running
         yet (or always, with ``diagnostic``). Uses the profile's own context and
-        first page, so its fingerprint, proxy and cookies apply."""
+        first page, so its fingerprint, proxy and cookies apply. ``headless``
+        applies only when this call launches the profile; a running one is
+        reused as it is."""
         cdp_url = None
         if not diagnostic:
             running = next(
@@ -159,7 +170,9 @@ class Veilus:
             )
             cdp_url = (running or {}).get("cdpUrl")
         if not cdp_url:
-            cdp_url = (await self.launch(profile_id, diagnostic=diagnostic))["cdpUrl"]
+            cdp_url = (
+                await self.launch(profile_id, diagnostic=diagnostic, headless=headless)
+            )["cdpUrl"]
 
         try:
             from playwright.async_api import async_playwright
