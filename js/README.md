@@ -4,6 +4,20 @@ Launch [Veilus](https://veilus.io) browser profiles from Node and drive them wit
 
 Each Veilus profile is a browser with its own fingerprint, proxy and cookies. This package talks to the Veilus app's local API, launches a profile, and connects Playwright to that profile's own browser — so your script runs with the profile's identity.
 
+## Works with
+
+Tested with a real Veilus profile — see [examples/TESTED.md](https://github.com/veilus/sdk/blob/main/examples/TESTED.md) for versions and date:
+[Playwright](https://github.com/veilus/sdk/blob/main/examples/js/playwright.mjs) ·
+[Puppeteer](https://github.com/veilus/sdk/blob/main/examples/js/puppeteer.mjs) ·
+[browser-use](https://github.com/veilus/sdk/blob/main/examples/python/browser_use_example.py) ·
+[Stagehand](https://github.com/veilus/sdk/blob/main/examples/js/stagehand.mjs) ·
+[Crawl4AI](https://github.com/veilus/sdk/blob/main/examples/python/crawl4ai_example.py) ·
+[LangChain](https://github.com/veilus/sdk/blob/main/examples/python/langchain_example.py) ·
+[Scrapling](https://github.com/veilus/sdk/blob/main/examples/python/scrapling_example.py) ·
+[Crawlee](https://github.com/veilus/sdk/blob/main/examples/python/crawlee_example.py) ·
+[playwright-mcp](https://github.com/veilus/sdk/blob/main/examples/js/playwright-mcp.mjs) ·
+[agent-browser](https://github.com/veilus/sdk/blob/main/examples/shell/agent-browser.sh)
+
 ```bash
 npm install veilus playwright-core
 ```
