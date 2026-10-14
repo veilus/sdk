@@ -1,6 +1,6 @@
 {
   "name": "veilus",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Launch Veilus browser profiles from Node and drive them with Playwright.",
   "type": "module",
   "main": "./src/index.js",
