@@ -7,6 +7,7 @@ cdp="$(node -e "import('./veilus-example.mjs').then(async m => console.log(await
 ab() { npx --no-install agent-browser "$@"; }
 # `close` only ends agent-browser's daemon and detaches; the Veilus profile keeps running.
 trap 'ab close >/dev/null 2>&1 || true' EXIT
+cdp="${cdp%/}"
 ab connect "${cdp##*:}" >/dev/null
 ab open https://example.com >&2
 title="$(ab get title)"

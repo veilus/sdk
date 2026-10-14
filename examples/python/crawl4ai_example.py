@@ -7,7 +7,15 @@ from veilus_example import URL, cdp_url, ok, version
 
 
 async def main() -> None:
-    config = BrowserConfig(browser_mode="cdp", cdp_url=await cdp_url())
+    # By default Crawl4AI opens a new context and sends its own User-Agent and
+    # sec-ch-ua headers. These three settings keep the profile's own context and headers.
+    config = BrowserConfig(
+        browser_mode="cdp",
+        cdp_url=await cdp_url(),
+        use_managed_browser=True,
+        user_agent="",
+    )
+    config.headers.pop("sec-ch-ua", None)
     async with AsyncWebCrawler(config=config) as crawler:
         result = await crawler.arun(URL)
     version("crawl4ai")

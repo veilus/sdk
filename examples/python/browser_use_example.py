@@ -9,7 +9,11 @@ from veilus_example import URL, cdp_url, ok, version
 
 
 async def main() -> None:
-    browser = Browser(cdp_url=await cdp_url(), keep_alive=True)
+    # headless=False + no_viewport=True: never resize the profile's tabs, even when
+    # this script runs on a machine without a display.
+    browser = Browser(
+        cdp_url=await cdp_url(), keep_alive=True, headless=False, no_viewport=True
+    )
     # browser-use forces tool_choice; claude-haiku-5-5 accepts that, while
     # claude-sonnet-5-5 and claude-opus-5-5 answer HTTP 400.
     llm = ChatAnthropic(

@@ -45,7 +45,12 @@ class Result:
 
 
 def _py(group: str, file: str, **kw) -> Example:
-    return Example(group, [*PY, group, "python", str(HERE / "python" / file)], **kw)
+    return Example(
+        group,
+        [*PY, group, "python", str(HERE / "python" / file)],
+        needs_cmd=("uv",),
+        **kw,
+    )
 
 
 def _js(name: str, file: str, **kw) -> Example:
