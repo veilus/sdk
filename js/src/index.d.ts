@@ -31,12 +31,15 @@ export interface Profile {
 export interface LaunchOptions {
   /** Veilus >= 0.2.10: the profile's proxy without its fingerprint, in a temporary directory. */
   diagnostic?: boolean;
+  /** Veilus >= 0.2.13: no browser window; the profile's fingerprint is unchanged. `connect()` reuses a running profile as it is. */
+  headless?: boolean;
 }
 
 export interface Launched {
   pid: number;
   cdpUrl: string;
   diagnostic?: boolean;
+  headless?: boolean;
 }
 
 export interface Connected {

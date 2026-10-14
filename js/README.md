@@ -50,11 +50,13 @@ await veilus.stop(profiles[0].id);
 |---|---|
 | `new Veilus({ token?, port?, appDir? })` | `token` defaults to `$VEILUS_API_TOKEN`; the port is read from the app's `api-endpoint.json` in `appDir` (`$VEILUS_APP_DIR` or `~/.veilus`) |
 | `listProfiles()` | all profiles; a running one carries `cdpUrl` |
-| `launch(id, { diagnostic? })` | starts the profile, returns `{ pid, cdpUrl }` |
+| `launch(id, { diagnostic?, headless? })` | starts the profile, returns `{ pid, cdpUrl }` |
 | `stop(id)` | stops the profile |
-| `connect(id, { diagnostic? })` | Playwright `{ browser, context, page, cdpUrl, close }` |
+| `connect(id, { diagnostic?, headless? })` | Playwright `{ browser, context, page, cdpUrl, close }` |
 
 `diagnostic: true` (Veilus 0.2.10 or newer) opens the profile through its proxy but **without** its fingerprint, in a temporary browser directory deleted on stop: the page sees this machine's real values. Use it to tell whether a site blocks the fingerprint or the IP — never on an account you care about.
+
+`headless: true` (Veilus 0.2.13 or newer) starts the profile without a browser window; its fingerprint, proxy and cookies are unchanged. It applies only when the call launches the profile — `connect()` reuses a running profile in whatever mode it runs.
 
 ## Security
 

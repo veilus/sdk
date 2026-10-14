@@ -84,6 +84,24 @@ def test_launch_sends_diagnostic_only_when_asked_and_stop_posts(tmp_path):
     api.close()
 
 
+def test_launch_sends_headless_only_when_asked(tmp_path):
+    api = FakeApi(tmp_path, lambda p: (200, {"pid": 7, "cdpUrl": "http://x"}))
+    v = Veilus(token="t", app_dir=api.app_dir)
+
+    async def run():
+        await v.launch("p1", headless=True)
+        await v.launch("p1", diagnostic=True, headless=True)
+        await v.launch("p1", headless=False)
+
+    asyncio.run(run())
+    assert [r[3] for r in api.requests] == [
+        '{"headless": true}',
+        '{"diagnostic": true, "headless": true}',
+        "{}",
+    ]
+    api.close()
+
+
 def test_launch_reply_without_cdp_url_names_minimum_version(tmp_path):
     api = FakeApi(tmp_path, lambda p: (200, {"pid": 7}))
     v = Veilus(token="t", app_dir=api.app_dir)
