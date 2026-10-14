@@ -5,7 +5,9 @@ import { URL, cdpUrl, ok, version } from './veilus-example.mjs';
 
 const model = process.env.VEILUS_EXAMPLE_MODEL ?? 'claude-sonnet-5-5';
 // Stagehand wants the browser's WebSocket endpoint, not the http:// address.
-const { webSocketDebuggerUrl } = await (await fetch(`${await cdpUrl()}/json/version`)).json();
+const res = await fetch(`${await cdpUrl()}/json/version`);
+if (!res.ok) throw new Error(`CDP /json/version answered HTTP ${res.status}`);
+const { webSocketDebuggerUrl } = await res.json();
 const stagehand = new Stagehand({
   env: 'LOCAL',
   localBrowserLaunchOptions: { cdpUrl: webSocketDebuggerUrl },
