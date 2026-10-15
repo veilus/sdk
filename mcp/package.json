@@ -1,0 +1,19 @@
+{
+  "name": "veilus-mcp",
+  "version": "0.1.0",
+  "description": "Stdio MCP launcher for the Veilus desktop app: profiles, page control, scripts and schedules for AI assistants.",
+  "type": "module",
+  "mcpName": "io.github.veilus/veilus",
+  "bin": { "veilus-mcp": "bin/veilus-mcp.js" },
+  "files": ["bin", "tools.json", "README.md", "LICENSE-MIT", "LICENSE-APACHE"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "test": "node --test",
+    "sync-tools": "node scripts/sync-tools.js"
+  },
+  "license": "MIT OR Apache-2.0",
+  "author": "Veilus <veilusbrowser@gmail.com>",
+  "homepage": "https://docs.veilus.io/reference/mcp/",
+  "repository": { "type": "git", "url": "git+https://github.com/veilus/sdk.git", "directory": "mcp" },
+  "keywords": ["veilus", "mcp", "model-context-protocol", "browser", "automation", "profiles"]
+}
