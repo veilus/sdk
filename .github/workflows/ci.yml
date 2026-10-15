@@ -36,6 +36,31 @@ jobs:
             - run: npm test
             - run: npm pack --dry-run
 
+    mcp:
+        name: mcp (node ${{ matrix.node }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        strategy:
+            matrix:
+                node: ["18", "22"]
+        defaults:
+            run:
+                working-directory: mcp
+        steps:
+            - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+            - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version: ${{ matrix.node }}
+            - run: npm test
+            - run: npm pack --dry-run
+            # The image MCP directories introspect: it must answer tools/list without the app.
+            - if: matrix.node == '22'
+              run: |
+                  docker build -t veilus-mcp:ci .
+                  printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \
+                    | docker run --rm -i veilus-mcp:ci \
+                    | node -e 'const n = JSON.parse(require("fs").readFileSync(0, "utf8")).result.tools.length; const want = require("./tools.json").length; if (n !== want) throw new Error(`docker tools/list: ${n} != ${want}`); console.log(`docker tools/list: ${n} tools`)'
+
     python:
         name: python ${{ matrix.python }}
         runs-on: ubuntu-latest
