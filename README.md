@@ -26,6 +26,8 @@ Both are thin clients of the Veilus desktop app's local REST API: they launch a 
 
 For other tools (Puppeteer, playwright-mcp, browser-use, Crawl4AI…), see [Use a Profile from Other Tools](https://docs.veilus.io/recipes/agent-frameworks/). The full REST API is documented at [docs.veilus.io](https://docs.veilus.io/reference/rest-api/).
 
+Also in the docs: [Web scraping recipe](https://docs.veilus.io/recipes/web-scraping/) · [Common issues](https://docs.veilus.io/troubleshooting/common-issues/) · [FAQ](https://docs.veilus.io/reference/faq/).
+
 ## License
 
 MIT or Apache-2.0, at your option.
