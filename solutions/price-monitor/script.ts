@@ -13,7 +13,7 @@ const DEFAULT_SELECTOR = ".price";
 const PAUSE_MS = 1_000; // go easy on the site
 
 // Takes the last "." or "," as the decimal point: "£51.77" -> 51.77, "1.299,00 €" -> 1299.
-// ponytail: "1,299" with no decimals reads as 1.299; add a DECIMAL column if a site needs it.
+// Limitation: a lone "," or "." before exactly three digits ("1,299", "1.299") reads as a decimal point; add a DECIMAL column if a site needs it.
 function parsePrice(text: string): number | null {
   const digits = text.replace(/[^\d.,]/g, "");
   const last = Math.max(digits.lastIndexOf("."), digits.lastIndexOf(","));
@@ -58,10 +58,12 @@ async function main() {
     await page.waitForTimeout(PAUSE_MS);
   }
 
+  const webhook = process.env.VEILUS_VAR_WEBHOOK_URL;
+  // Notify before saving: if the webhook fails, the next run still sees the change.
+  if (webhook && changed.length > 0) await notify(webhook, changed);
+
   await mkdir(outDir, { recursive: true });
   await writeFile(stateFile, JSON.stringify({ ...previous, ...current }, null, 2));
-  const webhook = process.env.VEILUS_VAR_WEBHOOK_URL;
-  if (webhook && changed.length > 0) await notify(webhook, changed);
 
   console.log(`RESULT ${JSON.stringify({ checked: rows.length, changed })}`);
   await browser.close();
