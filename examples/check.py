@@ -103,6 +103,7 @@ EXAMPLES = [
     _py("browser-use", "browser_use_example.py", needs_env=LLM),
     _js("stagehand", "stagehand.mjs", needs_env=LLM),
     _solution("price-monitor"),
+    _solution("geo-landing-check"),
 ]
 
 
