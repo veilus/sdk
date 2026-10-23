@@ -104,6 +104,7 @@ EXAMPLES = [
     _js("stagehand", "stagehand.mjs", needs_env=LLM),
     _solution("price-monitor"),
     _solution("geo-landing-check"),
+    _solution("ai-agent-mcp"),
 ]
 
 

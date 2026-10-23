@@ -16,6 +16,8 @@ Tested with a real Veilus profile — see [examples/TESTED.md](https://github.co
 [playwright-mcp](https://github.com/veilus/sdk/blob/main/examples/js/playwright-mcp.mjs) ·
 [agent-browser](https://github.com/veilus/sdk/blob/main/examples/shell/agent-browser.sh)
 
+Ready-made solutions: [solutions/](solutions/) — price monitor, geo landing check, AI agent over MCP.
+
 | Language | Package | Install |
 |---|---|---|
 | Node.js | [`veilus`](js/) | `npm install veilus playwright-core` |

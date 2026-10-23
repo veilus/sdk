@@ -10,6 +10,7 @@ Ready-to-run Veilus Flow scripts for real jobs. Each folder has:
 |---|---|
 | [price-monitor](price-monitor/) | Track prices on product pages and get told when one changes. |
 | [geo-landing-check](geo-landing-check/) | See your landing pages as visitors in each country do. |
+| [ai-agent-mcp](ai-agent-mcp/) | Let Claude drive a profile over MCP, then keep what it did as a script. |
 
 Every script here runs daily on a real Veilus profile (`examples/check.py`).
 
