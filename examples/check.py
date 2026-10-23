@@ -8,6 +8,7 @@ SKIP always says why. `TESTED.md` is generated from this — never edit it by ha
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime as dt
 import json
 import os
@@ -15,11 +16,14 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import urllib.request
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from urllib.parse import urlparse
 
 HERE = Path(__file__).resolve().parent
+SOLUTIONS = HERE.parent / "solutions"
 PY = ["uv", "run", "--project", str(HERE / "python"), "--group"]
 TIMEOUT_S = 300
 
@@ -34,6 +38,8 @@ class Example:
     cmd: list[str]
     needs_env: tuple[str, ...] = ()
     needs_cmd: tuple[str, ...] = ()
+    marker: str = "VEILUS_EXAMPLE_OK "
+    env: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -55,6 +61,29 @@ def _py(group: str, file: str, **kw) -> Example:
 
 def _js(name: str, file: str, **kw) -> Example:
     return Example(name, ["node", str(HERE / "js" / file)], needs_cmd=("node",), **kw)
+
+
+def dataset_rows(path: Path) -> str:
+    """A solution's dataset.csv as the JSON array Veilus passes in VEILUS_VAR_ROWS."""
+    with path.open(encoding="utf-8", newline="") as f:
+        return json.dumps(list(csv.DictReader(f)))
+
+
+def _solution(name: str) -> Example:
+    d = SOLUTIONS / name
+    return Example(
+        f"solution:{name}",
+        ["node", str(d / "script.ts")],
+        needs_cmd=("node",),
+        marker="RESULT ",
+        env={
+            "VEILUS_VAR_ROWS": dataset_rows(d / "dataset.csv"),
+            # Never the runner's real home: $HOME is the dev's live environment.
+            "VEILUS_VAR_OUT_DIR": str(
+                Path(tempfile.gettempdir()) / "veilus-solutions-check"
+            ),
+        },
+    )
 
 
 LLM = ("ANTHROPIC_API_KEY",)
@@ -79,7 +108,7 @@ EXAMPLES = [
 def run_example(
     ex: Example, env: dict[str, str], profile_running, timeout: int = TIMEOUT_S
 ) -> Result:
-    full_env = {**os.environ, **env}
+    full_env = {**os.environ, **env, **ex.env}
     for var in ex.needs_env:
         if not full_env.get(var):
             return Result(ex.name, "SKIP", f"no {var}")
@@ -105,7 +134,7 @@ def run_example(
     for line in stdout.splitlines():
         if line.startswith("VEILUS_EXAMPLE_VERSION "):
             version = line.split(" ", 1)[1].strip()
-        if line.startswith("VEILUS_EXAMPLE_OK "):
+        if line.startswith(ex.marker):
             marker = True
     tail = (stderr or stdout).strip().splitlines()[-3:]
     if proc.returncode != 0:
@@ -113,7 +142,7 @@ def run_example(
             ex.name, "FAIL", f"exit {proc.returncode}: {' | '.join(tail)}", version
         )
     if not marker:
-        return Result(ex.name, "FAIL", "no VEILUS_EXAMPLE_OK line", version)
+        return Result(ex.name, "FAIL", f"no {ex.marker.strip()} line", version)
     if not profile_running(env.get("VEILUS_PROFILE_ID", "")):
         return Result(ex.name, "FAIL", "example closed the profile", version)
     return Result(ex.name, "PASS", "", version)
@@ -177,6 +206,15 @@ class Api:
     def is_running(self, profile_id: str) -> bool:
         return any(p["id"] == profile_id and p.get("cdpUrl") for p in self.profiles())
 
+    def debug_port(self, profile_id: str) -> int:
+        url = next(
+            (p.get("cdpUrl") for p in self.profiles() if p["id"] == profile_id), None
+        )
+        port = urlparse(url).port if url else None
+        if not port:
+            raise PreflightError(f"profile {profile_id} has no CDP address: {url!r}")
+        return port
+
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
@@ -202,13 +240,18 @@ def main(argv: list[str] | None = None) -> int:
             raise PreflightError("No profile in Veilus — create one first.")
         pid = os.environ.get("VEILUS_PROFILE_ID") or profiles[0]["id"]
         api.ensure_running(pid)
+        port = api.debug_port(pid)
     except PreflightError as e:
         print(e, file=sys.stderr)
         return 2
     except (OSError, ValueError, KeyError) as e:  # URLError/HTTPError are OSError
         print(f"Veilus local API preflight failed: {e!r}", file=sys.stderr)
         return 2
-    env = {"VEILUS_PROFILE_ID": pid}
+    env = {
+        "VEILUS_PROFILE_ID": pid,
+        "VEILUS_VAR_PROFILE_ID": pid,
+        "VEILUS_DEBUG_PORT": str(port),
+    }
     todo = [e for e in EXAMPLES if not args.only or e.name in args.only]
     results = [run_example(e, env, api.is_running) for e in todo]
     table = render_table(results, dt.datetime.now().astimezone().date().isoformat())

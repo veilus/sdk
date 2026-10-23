@@ -1,8 +1,11 @@
+import json
 import os
 import signal
 import sys
 import time
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent))
 import check
@@ -141,3 +144,57 @@ def test_only_unknown_name_exits_2_and_lists_valid_names(capsys):
 def test_write_tested_refuses_with_only(capsys):
     assert check.main(["--only", "playwright", "--write-tested"]) == 2
     assert "--write-tested" in capsys.readouterr().err
+
+
+def test_custom_marker_passes_without_example_ok_line():
+    ex = Example("sol", [PY, "-c", "print('RESULT {}')"], marker="RESULT ")
+    assert run_example(ex, {}, running).status == "PASS"
+
+
+def test_custom_marker_missing_names_it_in_reason():
+    ex = Example("sol", [PY, "-c", "print('VEILUS_EXAMPLE_OK x')"], marker="RESULT ")
+    r = run_example(ex, {}, running)
+    assert r.status == "FAIL" and "no RESULT line" in r.reason
+
+
+def test_example_env_reaches_the_process():
+    code = "import os; print('RESULT ' + os.environ['VEILUS_VAR_X'])"
+    ex = Example("sol", [PY, "-c", code], marker="RESULT ", env={"VEILUS_VAR_X": "1"})
+    assert run_example(ex, {}, running).status == "PASS"
+
+
+def test_dataset_rows_turns_csv_into_json_rows(tmp_path):
+    f = tmp_path / "d.csv"
+    f.write_text(
+        "URL,SELECTOR\nhttps://a.test/,.p\nhttps://b.test/,\n", encoding="utf-8"
+    )
+    assert json.loads(check.dataset_rows(f)) == [
+        {"URL": "https://a.test/", "SELECTOR": ".p"},
+        {"URL": "https://b.test/", "SELECTOR": ""},
+    ]
+
+
+def _api_with(monkeypatch, profiles):
+    monkeypatch.setattr(check.Api, "profiles", lambda self: profiles)
+    return object.__new__(check.Api)
+
+
+def test_debug_port_comes_from_cdp_url(monkeypatch):
+    api = _api_with(monkeypatch, [{"id": "a", "cdpUrl": "http://127.0.0.1:9333"}])
+    assert api.debug_port("a") == 9333
+
+
+def test_debug_port_without_cdp_url_is_a_preflight_error(monkeypatch):
+    api = _api_with(monkeypatch, [{"id": "a"}])
+    with pytest.raises(check.PreflightError, match="CDP"):
+        api.debug_port("a")
+
+
+def test_every_solution_dir_is_run_by_check():
+    dirs = {d.name for d in check.SOLUTIONS.iterdir() if (d / "script.ts").exists()}
+    listed = {
+        e.name.removeprefix("solution:")
+        for e in check.EXAMPLES
+        if e.name.startswith("solution:")
+    }
+    assert dirs == listed
