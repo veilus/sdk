@@ -4,13 +4,14 @@
 import { chromium, type Page } from "playwright";
 import { mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
 type Row = { URL: string };
 
 // Answers with "loc=XX" for the IP that reached it. page.goto, not page.request:
 // only the page goes through the profile's proxy.
 const TRACE_URL = "https://www.cloudflare.com/cdn-cgi/trace";
+const MAX_TITLE = 80; // keep RESULT under the app's 4096-character output limit
 
 async function exitCountry(page: Page): Promise<string> {
   await page.goto(TRACE_URL, { waitUntil: "domcontentloaded" });
@@ -46,13 +47,13 @@ async function main() {
       finalUrl: page.url(),
       status: res?.status() ?? null,
       lang: await page.evaluate(() => document.documentElement.lang || null),
-      title: await page.title(),
-      screenshot,
+      title: (await page.title()).slice(0, MAX_TITLE),
+      screenshot: basename(screenshot),
     });
   }
   const timezone = await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
 
-  console.log(`RESULT ${JSON.stringify({ country, timezone, pages })}`);
+  console.log(`RESULT ${JSON.stringify({ country, timezone, outDir, pages })}`);
   await browser.close();
 }
 
