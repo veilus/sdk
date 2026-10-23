@@ -14,7 +14,7 @@ async function main() {
   const context = browser.contexts()[0];
   const page = context.pages()[0] ?? (await context.newPage());
 
-  const orders = [];
+  const orders: { name: string; size: string; accepted: boolean }[] = [];
   for (const row of rows) {
     await page.goto(FORM_URL, { waitUntil: "domcontentloaded" });
     await page.fill('input[name="custname"]', row.NAME);

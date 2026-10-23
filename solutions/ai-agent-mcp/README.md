@@ -15,7 +15,7 @@ once per row of a dataset.
 
 | Change | How |
 |---|---|
-| Your own form | Profile variable `FORM_URL`, then change the `page.fill` selectors, or ask Claude to redo step 4 of the prompt on your page. |
+| Your own form | Profile variable `FORM_URL`, then change the `page.fill` selectors and the check after the submit: the example reads httpbin's JSON echo, while a real site shows a confirmation page. Or ask Claude to redo step 4 of the prompt on your page. |
 | Your data | One row per submission in `dataset.csv`. |
 
 `script.ts` runs daily on a real Veilus profile. The prompt is not tested
