@@ -9,6 +9,7 @@ Ready-to-run Veilus Flow scripts for real jobs. Each folder has:
 | Solution | What it does |
 |---|---|
 | [price-monitor](price-monitor/) | Track prices on product pages and get told when one changes. |
+| [geo-landing-check](geo-landing-check/) | See your landing pages as visitors in each country do. |
 
 Every script here runs daily on a real Veilus profile (`examples/check.py`).
 
