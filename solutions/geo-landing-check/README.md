@@ -9,7 +9,7 @@ Use it to check ads, affiliate links and localized stores before you spend on tr
 1. **Profiles:** one profile per country, each with a proxy in that country.
    See [Proxy setup](https://docs.veilus.io/profiles/proxy/). On each profile, add a
    profile variable `COUNTRY` with the two-letter code (`DE`, `JP`, …).
-2. **Script and data:** paste `script.ts` into Veilus Flow → Scripts, import
+2. **Script and data:** paste `script.ts` into Veilus Flow → Scripts and approve it, import
    `dataset.csv` with your landing pages and assign it to all the profiles.
    See [Datasets](https://docs.veilus.io/profiles/datasets/).
 3. **Run:** run the script on all the profiles at once and read each profile's

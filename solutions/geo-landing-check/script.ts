@@ -22,7 +22,7 @@ async function exitCountry(page: Page): Promise<string> {
 
 async function main() {
   const rows: Row[] = JSON.parse(process.env.VEILUS_VAR_ROWS ?? "[]");
-  if (rows.length === 0) throw new Error("no rows: assign a dataset with a URL column to this profile");
+  if (rows.length === 0) throw new Error("no rows: assign a dataset with a URL column to this profile, and approve the script (datasets reach approved scripts only)");
   const expected = process.env.VEILUS_VAR_COUNTRY?.trim().toUpperCase();
   const runId = process.env.VEILUS_VAR_RUN_ID ?? String(Date.now());
   const outDir = join(process.env.VEILUS_VAR_OUT_DIR ?? join(homedir(), "veilus-solutions"), "geo-landing-check");
