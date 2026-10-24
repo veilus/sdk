@@ -6,7 +6,7 @@ profile's fingerprint, proxy and cookies.
 
 ## Run it in 3 steps
 
-1. **Script:** in Veilus Flow → Scripts, create a script and paste `script.ts`. Save it.
+1. **Script:** in Veilus Flow → Scripts, create a script and paste `script.ts`. Save it, then approve it: dataset rows reach approved scripts only.
 2. **Data:** import `dataset.csv` as a dataset (one row per product page) and assign it
    to the profile. See [Datasets](https://docs.veilus.io/profiles/datasets/).
 3. **Schedule:** run it once to check, then add a schedule, for example every 6 hours.

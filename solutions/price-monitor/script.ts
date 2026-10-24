@@ -35,7 +35,7 @@ async function notify(webhook: string, changed: Change[]) {
 
 async function main() {
   const rows: Row[] = JSON.parse(process.env.VEILUS_VAR_ROWS ?? "[]");
-  if (rows.length === 0) throw new Error("no rows: assign a dataset with a URL column to this profile");
+  if (rows.length === 0) throw new Error("no rows: assign a dataset with a URL column to this profile, and approve the script (datasets reach approved scripts only)");
   const outDir = process.env.VEILUS_VAR_OUT_DIR ?? join(homedir(), "veilus-solutions");
   const stateFile = join(outDir, `price-monitor-${process.env.VEILUS_VAR_PROFILE_ID ?? "default"}.json`);
   const previous: Prices = await readFile(stateFile, "utf8").then(JSON.parse, () => ({}));
