@@ -18,7 +18,7 @@ Each run prints one line, for example:
 
 The first run only records prices, so `changed` is empty. If a page fails (selector not found, no price in it), the other rows are still checked and saved, and the `RESULT` line gets a `failed` list with the URL and a short error; the run then exits with code 1.
 
-Veilus keeps the last 4096 characters of a run's output. Measured: about 32 changed rows with books.toscrape.com-length URLs fit in one `RESULT` line (3991 characters); more than that and the line is cut. Keep the dataset to 30 pages or fewer per profile.
+Veilus keeps the last 4096 characters of a run's output. Measured: about 32 changed rows with books.toscrape.com-length URLs fit in one `RESULT` line (3991 characters); more than that and the line is cut. Keep the dataset to 30 pages or fewer per profile. Rows that fail are listed in `failed` too, and each one takes more room than a changed price, so a run where many pages fail can also be cut.
 
 ## Make it yours
 
