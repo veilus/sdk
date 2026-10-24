@@ -1,10 +1,10 @@
 // Fill a web form once per dataset row and check the site accepted it.
-// Written by Claude Code through the Veilus MCP server from prompt.md, then reviewed.
+// This is the kind of script prompt.md asks Claude to write; it is kept here so you can run it without Claude.
 import { chromium } from "playwright";
 
 type Row = { NAME: string; PHONE: string; EMAIL: string; SIZE: string; COMMENTS?: string };
 
-const FORM_URL = process.env.VEILUS_VAR_FORM_URL ?? "https://httpbin.org/forms/post";
+const FORM_URL = process.env.VEILUS_VAR_FORM_URL || "https://httpbin.org/forms/post";
 
 async function main() {
   const rows: Row[] = JSON.parse(process.env.VEILUS_VAR_ROWS ?? "[]");
@@ -14,7 +14,7 @@ async function main() {
   const context = browser.contexts()[0];
   const page = context.pages()[0] ?? (await context.newPage());
 
-  const orders: { name: string; size: string; accepted: boolean }[] = [];
+  const orders: { name: string; size: string }[] = [];
   for (const row of rows) {
     await page.goto(FORM_URL, { waitUntil: "domcontentloaded" });
     await page.fill('input[name="custname"]', row.NAME);
@@ -22,12 +22,11 @@ async function main() {
     await page.fill('input[name="custemail"]', row.EMAIL);
     await page.check(`input[name="size"][value="${row.SIZE}"]`);
     await page.fill('textarea[name="comments"]', row.COMMENTS ?? "");
-    await Promise.all([page.waitForURL("**/post"), page.click('button:has-text("Submit order")')]);
+    await Promise.all([page.waitForURL((u) => u.pathname === "/post"), page.click('button:has-text("Submit order")')]);
     // httpbin echoes what it received; a real site would show a confirmation instead.
     const echo = JSON.parse(await page.locator("body").innerText());
-    const accepted = echo.form?.custname === row.NAME && echo.form?.size === row.SIZE;
-    if (!accepted) throw new Error(`the form did not take ${row.NAME}: ${JSON.stringify(echo.form)}`);
-    orders.push({ name: row.NAME, size: row.SIZE, accepted });
+    if (echo.form?.custname !== row.NAME || echo.form?.size !== row.SIZE) throw new Error(`the form did not take ${row.NAME}: ${JSON.stringify(echo.form)}`);
+    orders.push({ name: row.NAME, size: row.SIZE });
   }
 
   console.log(`RESULT ${JSON.stringify({ submitted: orders.length, orders })}`);

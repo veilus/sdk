@@ -4,7 +4,7 @@
 import { chromium, type Page } from "playwright";
 import { mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
-import { basename, join } from "node:path";
+import { join } from "node:path";
 
 type Row = { URL: string };
 
@@ -25,7 +25,7 @@ async function main() {
   if (rows.length === 0) throw new Error("no rows: assign a dataset with a URL column to this profile, and approve the script (datasets reach approved scripts only)");
   const expected = process.env.VEILUS_VAR_COUNTRY?.trim().toUpperCase();
   const runId = process.env.VEILUS_VAR_RUN_ID ?? String(Date.now());
-  const outDir = join(process.env.VEILUS_VAR_OUT_DIR ?? join(homedir(), "veilus-solutions"), "geo-landing-check");
+  const outDir = join(process.env.VEILUS_VAR_OUT_DIR || join(homedir(), "veilus-solutions"), "geo-landing-check", runId);
 
   const browser = await chromium.connectOverCDP(`http://127.0.0.1:${process.env.VEILUS_DEBUG_PORT}`);
   const context = browser.contexts()[0];
@@ -39,16 +39,16 @@ async function main() {
 
   const pages = [];
   for (const [i, row] of rows.entries()) {
-    const res = await page.goto(row.URL, { waitUntil: "domcontentloaded" });
-    const screenshot = join(outDir, `${country}-${runId}-${i + 1}.png`);
-    await page.screenshot({ path: screenshot }); // visible area only: fullPage would override the profile's screen metrics
+    const res = await page.goto(row.URL, { waitUntil: "load" });
+    const screenshot = `${country}-${i + 1}.png`;
+    await page.screenshot({ path: join(outDir, screenshot) }); // visible area only: fullPage would override the profile's screen metrics
     pages.push({
       url: row.URL,
-      finalUrl: page.url(),
+      ...(page.url() !== row.URL && { finalUrl: page.url() }),
       status: res?.status() ?? null,
       lang: await page.evaluate(() => document.documentElement.lang || null),
       title: (await page.title()).slice(0, MAX_TITLE),
-      screenshot: basename(screenshot),
+      screenshot,
     });
   }
   const timezone = await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone);

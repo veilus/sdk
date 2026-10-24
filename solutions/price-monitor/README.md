@@ -16,7 +16,9 @@ Each run prints one line, for example:
 
     RESULT {"checked":2,"changed":[{"url":"https://…","from":51.77,"to":49.99}]}
 
-The first run only records prices, so `changed` is empty.
+The first run only records prices, so `changed` is empty. If a page fails (selector not found, no price in it), the other rows are still checked and saved, and the `RESULT` line gets a `failed` list with the URL and a short error; the run then exits with code 1.
+
+Veilus keeps the last 4096 characters of a run's output. Measured: about 32 changed rows with books.toscrape.com-length URLs fit in one `RESULT` line (3991 characters); more than that and the line is cut. Keep the dataset to 30 pages or fewer per profile.
 
 ## Make it yours
 
@@ -24,7 +26,7 @@ The first run only records prices, so `changed` is empty.
 |---|---|
 | Your own product pages | Put them in the `URL` column. |
 | Where the price is | Put a CSS selector in `SELECTOR` (right-click the price → Inspect). Empty means `.price`. |
-| Get a message when a price changes | Add a profile variable `WEBHOOK_URL` with a Slack or Discord webhook URL. |
+| Get a message when a price changes | Add a profile variable `WEBHOOK_URL` with a webhook URL that accepts JSON (the body carries `text` for Slack and `content` for Discord). |
 | Where the last prices are kept | Profile variable `OUT_DIR` (default `~/veilus-solutions`). |
 
 Check each site's terms of service and robots.txt before you monitor it. The example
