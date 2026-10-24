@@ -19,7 +19,7 @@ If a profile's proxy exits from the wrong country, that profile fails with
 `this profile exits from US, not DE: check its proxy`, so you never compare pages
 from the wrong place.
 
-Screenshots are saved in `OUT_DIR/geo-landing-check/`; the `RESULT` line gives that folder once as `outDir` and each page's file name. Veilus keeps the last 4096 characters of a run's output, so keep each profile's list to about 20 pages.
+Screenshots are saved in `OUT_DIR/geo-landing-check/<run id>/`; the `RESULT` line gives that folder once as `outDir` and each page's file name (`DE-1.png`, …). Veilus keeps the last 4096 characters of a run's output, so keep each profile's list to 15 pages or fewer. Measured: with 80-character titles, 16 pages is the most that fits (3993 characters); if every page redirects, `finalUrl` is added and only 11 fit. A shorter URL list or a longer `OUT_DIR` path changes that, so leave some room.
 
 ## Make it yours
 

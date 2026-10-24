@@ -1,6 +1,6 @@
 # Prompt: let Claude build the automation
 
-Needs Claude Code with the Veilus plugin (`/plugin marketplace add veilus/claude-plugin`)
+Needs Claude Code with the Veilus plugin (`/plugin marketplace add veilus/claude-plugin`, then `/plugin install veilus@veilus`)
 and the Veilus app running with the local API on.
 
 Paste this into Claude Code:
@@ -8,7 +8,7 @@ Paste this into Claude Code:
 ```text
 Use the Veilus MCP tools.
 
-1. List my profiles and launch the first one.
+1. List my profiles and ask me which one to use for a test order, then launch it.
 2. Open https://httpbin.org/forms/post in it and take a snapshot so you can see the form.
 3. Fill the form for one test order (name "Alex Doe", phone 555-0100, email
    alex@example.com, size medium) and submit it. Read the page to check the order went through.

@@ -1,6 +1,6 @@
 """Run every example against a real Veilus profile and report PASS / FAIL / SKIP.
 
-PASS needs all three: exit code 0, a `VEILUS_EXAMPLE_OK` line, and the profile
+PASS needs all three: exit code 0, the example's marker line (`VEILUS_EXAMPLE_OK`, or `RESULT ` for solutions), and the profile
 still running afterwards (an example must disconnect, never close the browser).
 SKIP always says why. `TESTED.md` is generated from this — never edit it by hand.
 """

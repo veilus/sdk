@@ -2,7 +2,7 @@
 
 Ready-to-run Veilus Flow scripts for real jobs. Each folder has:
 
-- `script.ts`: paste it into **Veilus Flow → Scripts → New Script**, or let an AI assistant save it over MCP.
+- `script.ts`: paste it into **Veilus Flow → Scripts → New Script**, or let an AI assistant save it over MCP. Then approve it: dataset rows reach approved scripts only.
 - `dataset.csv`: example rows. Import it as a dataset and assign it to your profiles.
 - `README.md`: what it does, how to run it, what to change for your own sites.
 
@@ -16,7 +16,7 @@ Every script here runs daily on a real Veilus profile (`examples/check.py`).
 
 ## Run one from the command line
 
-Needs Node 22.18 or newer, and a running profile's debug port:
+Needs Node 22.18 or newer, and a running profile's debug port (the port in `cdpUrl` from `GET /v1/profiles`, or from `launch_profile`):
 
 ```bash
 cd solutions && npm ci
