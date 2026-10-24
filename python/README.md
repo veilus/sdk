@@ -56,11 +56,13 @@ asyncio.run(main())
 |---|---|
 | `Veilus(token=None, port=None, app_dir=None)` | `token` defaults to `$VEILUS_API_TOKEN`; the port is read from the app's `api-endpoint.json` in `app_dir` (`$VEILUS_APP_DIR` or `~/.veilus`) |
 | `await list_profiles()` | all profiles; a running one carries `cdpUrl` |
-| `await launch(id, diagnostic=False)` | starts the profile, returns `{"pid", "cdpUrl"}` |
+| `await launch(id, diagnostic=False, headless=False)` | starts the profile, returns `{"pid", "cdpUrl"}` |
 | `await stop(id)` | stops the profile |
-| `await connect(id, diagnostic=False)` | Playwright `browser`, `context`, `page`, `cdp_url`, `close()` |
+| `await connect(id, diagnostic=False, headless=False)` | Playwright `browser`, `context`, `page`, `cdp_url`, `close()` |
 
 `diagnostic=True` (Veilus 0.2.10 or newer) opens the profile through its proxy but **without** its fingerprint, in a temporary browser directory deleted on stop: the page sees this machine's real values. Use it to tell whether a site blocks the fingerprint or the IP — never on an account you care about.
+
+`headless=True` (Veilus 0.2.13 or newer) starts the profile without a browser window; its fingerprint, proxy and cookies are unchanged. It applies only when the call launches the profile — `connect()` reuses a running profile in whatever mode it runs.
 
 ## Security
 

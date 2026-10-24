@@ -101,12 +101,15 @@ export class Veilus {
   /**
    * Launch a profile and wait for its browser to start.
    * @param {string} profileId
-   * @param {{diagnostic?: boolean}} [options] `diagnostic` (Veilus >= 0.2.10): the
-   *   profile's proxy without its fingerprint, in a temporary directory.
-   * @returns {Promise<{pid: number, cdpUrl: string, diagnostic?: boolean}>}
+   * @param {{diagnostic?: boolean, headless?: boolean}} [options] `diagnostic` (Veilus >= 0.2.10): the
+   *   profile's proxy without its fingerprint, in a temporary directory. `headless`
+   *   (Veilus >= 0.2.13): no browser window; the profile's fingerprint is unchanged.
+   * @returns {Promise<{pid: number, cdpUrl: string, diagnostic?: boolean, headless?: boolean}>}
    */
-  async launch(profileId, { diagnostic = false } = {}) {
-    const body = diagnostic ? { diagnostic: true } : {};
+  async launch(profileId, { diagnostic = false, headless = false } = {}) {
+    const body = {};
+    if (diagnostic) body.diagnostic = true;
+    if (headless) body.headless = true;
     const out = await this.#request('POST', `/v1/profiles/${encodeURIComponent(profileId)}/launch`, body);
     if (!out?.cdpUrl) {
       throw new VeilusError('the launch reply has no `cdpUrl`: this SDK needs Veilus 0.2.9 or newer.');
@@ -123,17 +126,18 @@ export class Veilus {
    * Playwright connected to the profile: launched if it is not running yet
    * (or always, with `diagnostic`). Uses the profile's own context and first
    * page, so its fingerprint, proxy and cookies apply. `close()` only
-   * disconnects — the profile keeps running until `stop()`.
+   * disconnects — the profile keeps running until `stop()`. `headless` applies
+   * only when this call launches the profile; a running one is reused as it is.
    * @param {string} profileId
-   * @param {{diagnostic?: boolean}} [options]
+   * @param {{diagnostic?: boolean, headless?: boolean}} [options]
    */
-  async connect(profileId, { diagnostic = false } = {}) {
+  async connect(profileId, { diagnostic = false, headless = false } = {}) {
     let cdpUrl;
     if (!diagnostic) {
       const running = (await this.listProfiles()).find((p) => p.id === profileId && p.cdpUrl);
       cdpUrl = running?.cdpUrl;
     }
-    cdpUrl ??= (await this.launch(profileId, { diagnostic })).cdpUrl;
+    cdpUrl ??= (await this.launch(profileId, { diagnostic, headless })).cdpUrl;
 
     let chromium;
     try {
