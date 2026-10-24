@@ -16,8 +16,10 @@ Use the Veilus MCP tools.
    VEILUS_VAR_ROWS (columns NAME, PHONE, EMAIL, SIZE, COMMENTS), submits one order
    per row, throws if the site did not accept one, and prints one
    RESULT {...} line. Save it with save_script as "Form filler".
-5. Create a dataset "orders" with two rows, assign it to the profile, run the script
-   on that profile with run_script and show me get_run_result.
+5. Create a dataset "orders" with two rows and assign it to the profile. Then stop and
+   ask me to approve "Form filler" in Veilus Flow → Scripts: dataset rows reach approved
+   scripts only. When I say it is approved, run it on that profile with run_script and
+   show me get_run_result.
 ```
 
 Claude stops before the script runs unattended: you approve it in Veilus Flow →

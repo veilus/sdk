@@ -8,7 +8,7 @@ const FORM_URL = process.env.VEILUS_VAR_FORM_URL ?? "https://httpbin.org/forms/p
 
 async function main() {
   const rows: Row[] = JSON.parse(process.env.VEILUS_VAR_ROWS ?? "[]");
-  if (rows.length === 0) throw new Error("no rows: assign a dataset to this profile");
+  if (rows.length === 0) throw new Error("no rows: assign a dataset to this profile, and approve the script (datasets reach approved scripts only)");
 
   const browser = await chromium.connectOverCDP(`http://127.0.0.1:${process.env.VEILUS_DEBUG_PORT}`);
   const context = browser.contexts()[0];

@@ -8,8 +8,8 @@ once per row of a dataset.
 
 - **With Claude:** follow `prompt.md`. Claude works in the profile through the Veilus
   MCP server and saves a script. Nothing runs unattended until you approve it.
-- **Without Claude:** paste `script.ts` into Veilus Flow → Scripts, import `dataset.csv`
-  and assign it to a profile.
+- **Without Claude:** paste `script.ts` into Veilus Flow → Scripts and approve it, import
+  `dataset.csv` and assign it to a profile.
 
 ## Make it yours
 
