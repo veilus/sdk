@@ -1,0 +1,36 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.veilus/veilus",
+  "title": "Veilus",
+  "description": "Drive Veilus browser profiles from an AI assistant: profiles, pages, scripts, schedules.",
+  "websiteUrl": "https://docs.veilus.io/reference/mcp/",
+  "repository": {
+    "url": "https://github.com/veilus/sdk",
+    "source": "github",
+    "subfolder": "mcp"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "veilus-mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "VEILUS_API_TOKEN",
+          "description": "API token from the API & MCP page of the Veilus app",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "VEILUS_BINARY",
+          "description": "Path to the Veilus app binary, if not in the default macOS location",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

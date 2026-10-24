@@ -32,6 +32,11 @@ python examples/check.py --write-tested   # also updates TESTED.md
 2 when it cannot start (API off, no token, no profile, unknown `--only` name).
 `--write-tested` needs a full run and cannot be combined with `--only`.
 
+`check.py` also runs every script in `../solutions/` (names start with `solution:`).
+It turns the folder's `dataset.csv` into `VEILUS_VAR_ROWS` and passes the profile's
+`VEILUS_DEBUG_PORT`, as the app does. A solution passes on exit code 0 and a
+`RESULT {...}` line. Run `npm ci` in `solutions/` first; it needs Node 22.18 or newer.
+
 The two examples that drive an LLM (browser-use, Stagehand) need
 `ANTHROPIC_API_KEY`; set `VEILUS_EXAMPLE_MODEL` to use another Claude model.
 Without the key they are reported as `SKIP`, not run.

@@ -1,0 +1,9 @@
+{
+  "name": "veilus-solutions",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.18" },
+  "dependencies": {
+    "playwright": "^1.64.0"
+  }
+}

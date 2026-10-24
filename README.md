@@ -16,14 +16,19 @@ Tested with a real Veilus profile — see [examples/TESTED.md](https://github.co
 [playwright-mcp](https://github.com/veilus/sdk/blob/main/examples/js/playwright-mcp.mjs) ·
 [agent-browser](https://github.com/veilus/sdk/blob/main/examples/shell/agent-browser.sh)
 
+Ready-made solutions: [solutions/](solutions/) — price monitor, geo landing check, AI agent over MCP.
+
 | Language | Package | Install |
 |---|---|---|
 | Node.js | [`veilus`](js/) | `npm install veilus playwright-core` |
 | Python | [`veilus`](python/) | `pip install "veilus[playwright]"` |
+| MCP | [`veilus-mcp`](mcp/) | `npx -y veilus-mcp` (launcher for the app's MCP server) |
 
 Both are thin clients of the Veilus desktop app's local REST API: they launch a profile, then attach Playwright to that profile's own browser over its CDP address, so your script runs with the profile's fingerprint, proxy and cookies. They need the app (0.2.9 or newer) running with the local API on, and a token in `VEILUS_API_TOKEN`.
 
 For other tools (Puppeteer, playwright-mcp, browser-use, Crawl4AI…), see [Use a Profile from Other Tools](https://docs.veilus.io/recipes/agent-frameworks/). The full REST API is documented at [docs.veilus.io](https://docs.veilus.io/reference/rest-api/).
+
+Also in the docs: [Web scraping recipe](https://docs.veilus.io/recipes/web-scraping/) · [Common issues](https://docs.veilus.io/troubleshooting/common-issues/) · [FAQ](https://docs.veilus.io/reference/faq/).
 
 ## License
 
