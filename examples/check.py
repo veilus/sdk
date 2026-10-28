@@ -1,10 +1,11 @@
 """Run every example against a real Veilus profile and report PASS / FAIL / SKIP.
 
-PASS needs all three: exit code 0, the example's marker line (`VEILUS_EXAMPLE_OK`, or `RESULT ` for solutions), and the profile
-still running afterwards (an example must disconnect, never close the browser). An example (not a solution) must
-also open a local probe page, send the profile's own User-Agent and sec-ch-ua, and keep the viewport its window
-gives — frameworks that attach
-over CDP like to override them, which makes the profile contradict itself while the title check stays green.
+PASS needs all three: exit code 0, the example's marker line (`VEILUS_EXAMPLE_OK`, or `RESULT ` for solutions),
+and the profile still running afterwards (an example must disconnect, never close the browser).
+A solution's marker may carry more than "RESULT " to pin the expected result (account-health pins its status).
+An example (not a solution) must also open a local probe page, send the profile's own User-Agent and sec-ch-ua,
+and keep the viewport its window gives — frameworks that attach over CDP like to override them, which makes the
+profile contradict itself while the title check stays green.
 SKIP always says why. `TESTED.md` is generated from this — never edit it by hand.
 """
 
@@ -59,6 +60,8 @@ class Example:
     marker: str = "VEILUS_EXAMPLE_OK "
     env: dict[str, str] = field(default_factory=dict)
     probe: bool = True
+    # Opened in the profile through the Veilus API before the example runs (e.g. to set a session).
+    setup_url: str = ""
 
 
 @dataclass
@@ -88,21 +91,31 @@ def dataset_rows(path: Path) -> str:
         return json.dumps(list(csv.DictReader(f)))
 
 
-def _solution(name: str) -> Example:
+def _solution(
+    name: str,
+    variant: str = "",
+    *,
+    marker: str = "RESULT ",
+    env: dict[str, str] | None = None,
+    setup_url: str = "",
+) -> Example:
     d = SOLUTIONS / name
+    base = {
+        # Never the runner's real home: $HOME is the dev's live environment.
+        "VEILUS_VAR_OUT_DIR": str(
+            Path(tempfile.gettempdir()) / "veilus-solutions-check"
+        ),
+    }
+    if (d / "dataset.csv").exists():
+        base["VEILUS_VAR_ROWS"] = dataset_rows(d / "dataset.csv")
     return Example(
-        f"solution:{name}",
+        f"solution:{name}" + (f"/{variant}" if variant else ""),
         ["node", str(d / "script.ts")],
         needs_cmd=("node",),
-        marker="RESULT ",
+        marker=marker,
         probe=False,
-        env={
-            "VEILUS_VAR_ROWS": dataset_rows(d / "dataset.csv"),
-            # Never the runner's real home: $HOME is the dev's live environment.
-            "VEILUS_VAR_OUT_DIR": str(
-                Path(tempfile.gettempdir()) / "veilus-solutions-check"
-            ),
-        },
+        env={**base, **(env or {})},
+        setup_url=setup_url,
     )
 
 
@@ -204,6 +217,7 @@ class Probe:
 
 
 LLM = ("ANTHROPIC_API_KEY",)
+DEMO = {"VEILUS_VAR_PLATFORM": "demo"}
 EXAMPLES = [
     _js("playwright", "playwright.mjs"),
     _js("puppeteer", "puppeteer.mjs"),
@@ -222,6 +236,19 @@ EXAMPLES = [
     _solution("price-monitor"),
     _solution("geo-landing-check"),
     _solution("ai-agent-mcp"),
+    _solution(
+        "account-health",
+        env=DEMO,
+        setup_url="https://httpbin.org/cookies/delete?veilus_demo_session",
+        marker='RESULT {"platform":"demo","status":"logged_out"',
+    ),
+    _solution(
+        "account-health",
+        "session",
+        env=DEMO,
+        setup_url="https://httpbin.org/response-headers?Set-Cookie=veilus_demo_session%3D1%3B+Max-Age%3D2592000%3B+Path%3D%2F",
+        marker='RESULT {"platform":"demo","status":"logged_in"',
+    ),
 ]
 
 
@@ -231,6 +258,7 @@ def run_example(
     profile_running,
     timeout: int = TIMEOUT_S,
     probe: tuple[Seen, object] | None = None,
+    navigate=None,
 ) -> Result:
     full_env = {**os.environ, **env, **ex.env}
     for var in ex.needs_env:
@@ -239,6 +267,13 @@ def run_example(
     for cmd in ex.needs_cmd:
         if shutil.which(cmd) is None:
             return Result(ex.name, "SKIP", f"{cmd} not installed")
+    if ex.setup_url:
+        if navigate is None:
+            return Result(ex.name, "FAIL", "setup_url needs the Veilus API to open it")
+        try:
+            navigate(ex.setup_url)
+        except Exception as e:  # noqa: BLE001 - any failure is a FAIL row, not a crash
+            return Result(ex.name, "FAIL", f"setup_url {ex.setup_url}: {e}")
     proc = subprocess.Popen(
         ex.cmd,
         env=full_env,
@@ -409,7 +444,15 @@ def _run(args, probe: Probe) -> int:
     results = []
     for e in todo:
         probe.reset()
-        results.append(run_example(e, env, api.is_running, probe=(want, probe.wait)))
+        results.append(
+            run_example(
+                e,
+                env,
+                api.is_running,
+                probe=(want, probe.wait),
+                navigate=lambda url: api.navigate(pid, url),
+            )
+        )
     table = render_table(results, dt.datetime.now().astimezone().date().isoformat())
     print(table)
     if args.write_tested:

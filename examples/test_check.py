@@ -194,7 +194,7 @@ def test_debug_port_without_cdp_url_is_a_preflight_error(monkeypatch):
 def test_every_solution_dir_is_run_by_check():
     dirs = {d.name for d in check.SOLUTIONS.iterdir() if (d / "script.ts").exists()}
     listed = {
-        e.name.removeprefix("solution:")
+        e.name.removeprefix("solution:").split("/")[0]
         for e in check.EXAMPLES
         if e.name.startswith("solution:")
     }
@@ -281,3 +281,65 @@ def test_run_example_fails_when_the_example_never_opened_the_probe():
 def test_solutions_are_not_held_to_the_probe():
     assert all(not e.probe for e in check.EXAMPLES if e.name.startswith("solution:"))
     assert all(e.probe for e in check.EXAMPLES if not e.name.startswith("solution:"))
+
+
+def test_setup_url_is_opened_before_the_example_runs(tmp_path):
+    flag = tmp_path / "opened"
+    opened = []
+
+    def navigate(url):
+        opened.append(url)
+        flag.write_text(url)
+
+    code = f"import pathlib, sys\nif not pathlib.Path({str(flag)!r}).exists(): sys.exit(4)\n"
+    ex = Example("setup", [PY, "-c", code + OK], setup_url="https://example.test/login")
+    r = run_example(ex, {}, running, navigate=navigate)
+    assert (r.status, opened) == ("PASS", ["https://example.test/login"])
+
+
+def test_setup_url_without_navigate_fails_with_reason():
+    ex = Example("setup", [PY, "-c", OK], setup_url="https://example.test/login")
+    r = run_example(ex, {}, running)
+    assert r.status == "FAIL" and "setup_url" in r.reason
+
+
+def test_solution_without_dataset_sets_no_rows():
+    ex = check._solution("account-health", env={"VEILUS_VAR_PLATFORM": "demo"})
+    assert "VEILUS_VAR_ROWS" not in ex.env
+    assert ex.env["VEILUS_VAR_PLATFORM"] == "demo"
+
+
+def test_marker_prefix_holds_the_expected_status():
+    ex = Example(
+        "status",
+        [
+            PY,
+            "-c",
+            'print(\'RESULT {"platform":"demo","status":"logged_out","metrics":{}}\')',
+        ],
+        marker='RESULT {"platform":"demo","status":"logged_in"',
+    )
+    r = run_example(ex, {}, running)
+    assert r.status == "FAIL" and "logged_in" in r.reason
+
+
+def test_account_health_runs_signed_out_then_signed_in():
+    names = [e.name for e in check.EXAMPLES]
+    i = names.index("solution:account-health")
+    assert names[i + 1] == "solution:account-health/session"
+    out, session = check.EXAMPLES[i], check.EXAMPLES[i + 1]
+    assert "cookies/delete" in out.setup_url and "response-headers" in session.setup_url
+    assert out.marker.endswith('"status":"logged_out"')
+    assert session.marker.endswith('"status":"logged_in"')
+
+
+def test_setup_url_failure_is_a_fail_not_a_crash(tmp_path):
+    flag = tmp_path / "ran"
+
+    def navigate(url):
+        raise OSError("boom")
+
+    code = f"import pathlib\npathlib.Path({str(flag)!r}).write_text('x')\n"
+    ex = Example("setup", [PY, "-c", code + OK], setup_url="https://example.test/login")
+    r = run_example(ex, {}, running, navigate=navigate)
+    assert r.status == "FAIL" and "boom" in r.reason and not flag.exists()

@@ -43,7 +43,7 @@ example whose load sent different ones, or whose viewport does not fit its windo
 `check.py` also runs every script in `../solutions/` (names start with `solution:`).
 It turns the folder's `dataset.csv` into `VEILUS_VAR_ROWS` and passes the profile's
 `VEILUS_DEBUG_PORT`, as the app does. A solution passes on exit code 0, a
-`RESULT {...}` line and the profile still running. Run `npm ci` in `solutions/` first; it needs Node 22.18 or newer.
+`RESULT {...}` line and the profile still running. A solution can set `setup_url` (opened in the profile first) and a longer marker that pins the expected result. Run `npm ci` in `solutions/` first; it needs Node 22.18 or newer.
 
 The two examples that drive an LLM (browser-use, Stagehand) need
 `ANTHROPIC_API_KEY`; set `VEILUS_EXAMPLE_MODEL` to use another Claude model.
