@@ -3,6 +3,7 @@ import os
 import signal
 import sys
 import time
+import urllib.request
 from pathlib import Path
 
 import pytest
@@ -198,3 +199,85 @@ def test_every_solution_dir_is_run_by_check():
         if e.name.startswith("solution:")
     }
     assert dirs == listed
+
+
+BASE = check.Seen(
+    ua="UA/1", ch='"X";v="1"', js_ua="UA/1", viewport=(1200, 700, 1200, 790)
+)
+
+
+def test_drift_is_none_when_the_example_kept_the_profile_values():
+    assert check.drift(BASE, BASE) is None
+
+
+def test_drift_names_a_different_user_agent_header():
+    got = check.Seen("Chrome/116", BASE.ch, BASE.js_ua, BASE.viewport)
+    assert "User-Agent header" in check.drift(BASE, got)
+
+
+def test_drift_names_a_different_sec_ch_ua_header():
+    got = check.Seen(BASE.ua, '"X";v="116"', BASE.js_ua, BASE.viewport)
+    assert "sec-ch-ua" in check.drift(BASE, got)
+
+
+def test_drift_names_a_different_navigator_user_agent():
+    got = check.Seen(BASE.ua, BASE.ch, "Chrome/116", BASE.viewport)
+    assert "navigator.userAgent" in check.drift(BASE, got)
+
+
+def test_drift_names_a_forced_viewport():
+    got = check.Seen(BASE.ua, BASE.ch, BASE.js_ua, (1920, 1080, 1200, 790))
+    assert "1920x1080" in check.drift(BASE, got)
+
+
+def test_drift_names_a_viewport_smaller_than_the_window():
+    got = check.Seen(BASE.ua, BASE.ch, BASE.js_ua, (800, 600, 1200, 790))
+    assert "800x600" in check.drift(BASE, got)
+
+
+def test_drift_holds_the_viewport_to_its_own_window_not_the_baseline():
+    want = check.Seen(BASE.ua, BASE.ch, BASE.js_ua, (1512, 857, 0, 0))
+    assert check.drift(want, BASE) is None
+
+
+def test_drift_when_the_page_script_never_reported():
+    got = check.Seen(BASE.ua, BASE.ch, None, None)
+    assert "never reported" in check.drift(BASE, got)
+
+
+def test_probe_records_header_and_page_values():
+    with check.Probe() as probe:
+        req = urllib.request.Request(probe.url, headers={"User-Agent": "UA/9"})
+        page = urllib.request.urlopen(req, timeout=5).read().decode()
+        assert "<title>Example Domain</title>" in page
+        body = json.dumps(
+            {"ua": "UA/9", "w": 800, "h": 600, "ow": 800, "oh": 690}
+        ).encode()
+        urllib.request.urlopen(
+            urllib.request.Request(probe.url + "probe", data=body), timeout=5
+        )
+        seen = probe.wait(1)
+    assert seen == check.Seen("UA/9", "", "UA/9", (800, 600, 800, 690))
+
+
+def test_probe_returns_none_when_no_page_loaded():
+    with check.Probe() as probe:
+        assert probe.wait(0.2) is None
+
+
+def test_run_example_fails_when_the_page_values_drift():
+    seen = check.Seen("Chrome/116", BASE.ch, BASE.js_ua, BASE.viewport)
+    ex = Example("fake", [PY, "-c", OK])
+    r = run_example(ex, {}, running, probe=(BASE, lambda: seen))
+    assert r.status == "FAIL" and "User-Agent header" in r.reason
+
+
+def test_run_example_fails_when_the_example_never_opened_the_probe():
+    ex = Example("fake", [PY, "-c", OK])
+    r = run_example(ex, {}, running, probe=(BASE, lambda: None))
+    assert r.status == "FAIL" and "never loaded" in r.reason
+
+
+def test_solutions_are_not_held_to_the_probe():
+    assert all(not e.probe for e in check.EXAMPLES if e.name.startswith("solution:"))
+    assert all(e.probe for e in check.EXAMPLES if not e.name.startswith("solution:"))

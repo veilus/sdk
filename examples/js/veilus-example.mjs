@@ -2,7 +2,8 @@
 import { createRequire } from 'node:module';
 import { Veilus } from 'veilus';
 
-export const URL = 'https://example.com';
+// check.py points this at a local page that records the UA and viewport the example used.
+export const URL = process.env.VEILUS_EXAMPLE_URL || 'https://example.com';
 const EXPECTED_TITLE = 'Example Domain';
 const require = createRequire(import.meta.url);
 
