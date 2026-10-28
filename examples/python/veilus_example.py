@@ -6,7 +6,8 @@ from importlib.metadata import version as _dist_version
 
 from veilus import Veilus
 
-URL = "https://example.com"
+# check.py points this at a local page that records the UA and viewport the example used.
+URL = os.environ.get("VEILUS_EXAMPLE_URL", "https://example.com")
 EXPECTED_TITLE = "Example Domain"
 
 
