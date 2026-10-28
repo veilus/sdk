@@ -39,7 +39,8 @@ The `demo` entry runs daily on a real Veilus profile.
 `value` is the first number in the element's text; `raw` keeps up to 40 characters of
 the text as it was (so `1.2K` is still readable). Exit code 0 means the page was read,
 signed in or not. Exit code 1 means the page did not load, `PLATFORM` is wrong, or a
-signed-in page did not show a metric.
+signed-in page did not show a metric. Exit code 1 also means the webhook did not accept the
+alert (the RESULT line is still printed).
 
 ## Make it yours
 

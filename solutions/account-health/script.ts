@@ -1,6 +1,6 @@
 // Account health: check that this profile is still signed in to its own account, and read a few numbers.
 // Read-only: it never signs in, never sees a password, and never posts, likes, follows or sends messages.
-import { chromium } from "playwright";
+import { chromium, errors } from "playwright";
 
 type Platform = {
   url: string; // page to open
@@ -9,7 +9,7 @@ type Platform = {
 };
 type Metric = { value: number | null; raw: string };
 
-// Real platforms were measured by hand on the date in README.md; CI runs only "demo".
+// Add a real platform only after measuring its selectors by hand; note the date in README.md. CI runs only "demo".
 const PLATFORMS: Record<string, Platform> = {
   // Signed in = the profile holds the cookie veilus_demo_session (open /cookies/set?veilus_demo_session=1).
   demo: {
@@ -55,7 +55,13 @@ async function main() {
     .locator(platform.loggedIn)
     .first()
     .waitFor({ timeout: WAIT_MS })
-    .then(() => true, () => false);
+    .then(
+      () => true,
+      (e) => {
+        if (e instanceof errors.TimeoutError) return false; // only a timeout means signed out
+        throw e;
+      },
+    );
 
   const metrics: Record<string, Metric> = {};
   if (signedIn) {
@@ -72,9 +78,16 @@ async function main() {
 
   const status = signedIn ? "logged_in" : "logged_out";
   const webhook = process.env.VEILUS_VAR_WEBHOOK_URL;
-  if (!signedIn && webhook) await notify(webhook, name, url);
 
   console.log(`RESULT ${JSON.stringify({ platform: name, status, metrics })}`);
+  if (!signedIn && webhook) {
+    try {
+      await notify(webhook, name, url);
+    } catch (e) {
+      console.error(`webhook failed: ${e instanceof Error ? e.message : e}`);
+      process.exitCode = 1; // an alert that was not delivered must not look green
+    }
+  }
   await browser.close();
 }
 

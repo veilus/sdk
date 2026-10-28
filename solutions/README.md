@@ -13,7 +13,7 @@ Ready-to-run Veilus Flow scripts for real jobs. Each folder has:
 | [ai-agent-mcp](ai-agent-mcp/) | Let Claude drive a profile over MCP, then keep what it did as a script. |
 | [account-health](account-health/) | Check that each profile is still signed in to its own account, and read a few numbers. |
 
-Every script here runs daily on a real Veilus profile (`examples/check.py`). account-health runs its `demo` entry there; its real-platform selectors were measured by hand (see its README).
+Every script here runs daily on a real Veilus profile (`examples/check.py`). account-health runs its `demo` entry there; selectors for real platforms are measured by hand when added (see its README).
 
 ## Run one from the command line
 

@@ -1,12 +1,11 @@
 """Run every example against a real Veilus profile and report PASS / FAIL / SKIP.
 
-PASS needs all three: exit code 0, the example's marker line (`VEILUS_EXAMPLE_OK`, or `RESULT ` for solutions), and the profile
-still running afterwards (an example must disconnect, never close the browser).
+PASS needs all three: exit code 0, the example's marker line (`VEILUS_EXAMPLE_OK`, or `RESULT ` for solutions),
+and the profile still running afterwards (an example must disconnect, never close the browser).
 A solution's marker may carry more than "RESULT " to pin the expected result (account-health pins its status).
-An example (not a solution) must
-also open a local probe page, send the profile's own User-Agent and sec-ch-ua, and keep the viewport its window
-gives — frameworks that attach
-over CDP like to override them, which makes the profile contradict itself while the title check stays green.
+An example (not a solution) must also open a local probe page, send the profile's own User-Agent and sec-ch-ua,
+and keep the viewport its window gives — frameworks that attach over CDP like to override them, which makes the
+profile contradict itself while the title check stays green.
 SKIP always says why. `TESTED.md` is generated from this — never edit it by hand.
 """
 
@@ -271,7 +270,10 @@ def run_example(
     if ex.setup_url:
         if navigate is None:
             return Result(ex.name, "FAIL", "setup_url needs the Veilus API to open it")
-        navigate(ex.setup_url)
+        try:
+            navigate(ex.setup_url)
+        except Exception as e:  # noqa: BLE001 - any failure is a FAIL row, not a crash
+            return Result(ex.name, "FAIL", f"setup_url {ex.setup_url}: {e}")
     proc = subprocess.Popen(
         ex.cmd,
         env=full_env,

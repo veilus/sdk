@@ -331,3 +331,15 @@ def test_account_health_runs_signed_out_then_signed_in():
     assert "cookies/delete" in out.setup_url and "cookies/set" in session.setup_url
     assert out.marker.endswith('"status":"logged_out"')
     assert session.marker.endswith('"status":"logged_in"')
+
+
+def test_setup_url_failure_is_a_fail_not_a_crash(tmp_path):
+    flag = tmp_path / "ran"
+
+    def navigate(url):
+        raise OSError("boom")
+
+    code = f"import pathlib\npathlib.Path({str(flag)!r}).write_text('x')\n"
+    ex = Example("setup", [PY, "-c", code + OK], setup_url="https://example.test/login")
+    r = run_example(ex, {}, running, navigate=navigate)
+    assert r.status == "FAIL" and "boom" in r.reason and not flag.exists()
