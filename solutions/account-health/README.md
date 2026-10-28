@@ -13,7 +13,8 @@ the profile keeps that session.
 1. Paste `script.ts` into **Veilus Flow → Scripts** and approve it.
 2. On a profile, add the profile variable `PLATFORM` = `demo`.
 3. Run it: `RESULT {"platform":"demo","status":"logged_out","metrics":{}}`.
-4. Open `https://httpbin.org/cookies/set?veilus_demo_session=1` in that profile ("sign in"),
+4. Open `https://httpbin.org/response-headers?Set-Cookie=veilus_demo_session%3D1%3B+Max-Age%3D2592000%3B+Path%3D%2F` in that profile ("sign in")
+   (a cookie that lasts 30 days, like a real sign-in, so it survives the profile restarting),
    run again: `"status":"logged_in"` with a `session` metric.
    `https://httpbin.org/cookies/delete?veilus_demo_session` signs out again.
 

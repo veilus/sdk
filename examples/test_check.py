@@ -328,7 +328,7 @@ def test_account_health_runs_signed_out_then_signed_in():
     i = names.index("solution:account-health")
     assert names[i + 1] == "solution:account-health/session"
     out, session = check.EXAMPLES[i], check.EXAMPLES[i + 1]
-    assert "cookies/delete" in out.setup_url and "cookies/set" in session.setup_url
+    assert "cookies/delete" in out.setup_url and "response-headers" in session.setup_url
     assert out.marker.endswith('"status":"logged_out"')
     assert session.marker.endswith('"status":"logged_in"')
 

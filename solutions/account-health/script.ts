@@ -11,7 +11,7 @@ type Metric = { value: number | null; raw: string };
 
 // Add a real platform only after measuring its selectors by hand; note the date in README.md. CI runs only "demo".
 const PLATFORMS: Record<string, Platform> = {
-  // Signed in = the profile holds the cookie veilus_demo_session (open /cookies/set?veilus_demo_session=1).
+  // Signed in = the profile holds the cookie veilus_demo_session (open the sign-in link in README.md).
   demo: {
     url: "https://httpbin.org/cookies",
     loggedIn: 'pre:has-text("veilus_demo_session")',

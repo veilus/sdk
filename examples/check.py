@@ -246,7 +246,7 @@ EXAMPLES = [
         "account-health",
         "session",
         env=DEMO,
-        setup_url="https://httpbin.org/cookies/set?veilus_demo_session=1",
+        setup_url="https://httpbin.org/response-headers?Set-Cookie=veilus_demo_session%3D1%3B+Max-Age%3D2592000%3B+Path%3D%2F",
         marker='RESULT {"platform":"demo","status":"logged_in"',
     ),
 ]
