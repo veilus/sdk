@@ -3,7 +3,7 @@
 Ready-to-run Veilus Flow scripts for real jobs. Each folder has:
 
 - `script.ts`: paste it into **Veilus Flow → Scripts → New Script**, or let an AI assistant save it over MCP. Then approve it: dataset rows reach approved scripts only.
-- `dataset.csv`: example rows. Import it as a dataset and assign it to your profiles.
+- `dataset.csv` (most solutions): example rows. Import it as a dataset and assign it to your profiles.
 - `README.md`: what it does, how to run it, what to change for your own sites.
 
 | Solution | What it does |
@@ -11,8 +11,9 @@ Ready-to-run Veilus Flow scripts for real jobs. Each folder has:
 | [price-monitor](price-monitor/) | Track prices on product pages and get told when one changes. |
 | [geo-landing-check](geo-landing-check/) | See your landing pages as visitors in each country do. |
 | [ai-agent-mcp](ai-agent-mcp/) | Let Claude drive a profile over MCP, then keep what it did as a script. |
+| [account-health](account-health/) | Check that each profile is still signed in to its own account, and read a few numbers. |
 
-Every script here runs daily on a real Veilus profile (`examples/check.py`).
+Every script here runs daily on a real Veilus profile (`examples/check.py`). account-health runs its `demo` entry there; its real-platform selectors were measured by hand (see its README).
 
 ## Run one from the command line
 
